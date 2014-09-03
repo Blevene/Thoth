@@ -24,3 +24,7 @@ optional arguments:
   --input INPUT  specify a folder or file to be scanned
  
   -b, --bro      mandatory for parsing bro uids from a filename
+  
+  -m, --move     use this switch to tell the script to move matches to a
+                 directory specified in thoth.ini
+
