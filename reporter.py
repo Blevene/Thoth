@@ -31,6 +31,14 @@ def md5sum(filename):
             m.update(data)
         hashes.append(m.hexdigest())
     return hashes
+#Move files to another location to mark that they have been analyzed
+#and are ready for phase 2 (dynamic analysis)
+#taken from MIDAS (https://github.com/Xen0ph0n/MIDAS/blob/master/midas.py)
+def moveFiles(movepath, filename, name):
+	if not os.path.exists(movepath):
+		os.makedirs(movepath)
+	shutil.move(filename, movepath + name)
+	logging.info(filename + " has been moved to " + movepath + name)
 
 # take all the file names from the directory and put into a list
 # taken from MIDAS (https://github.com/Xen0ph0n/MIDAS)
@@ -132,6 +140,18 @@ def main(args):
 	filtered_dict = {k:v for (k,v) in output.iteritems() if not "null" in v}
 	print filtered_dict
 
+	#move the files to a specified location
+	#specify the location in thoth.ini, example /tmp/
+	#note the trailing slash is necessary
+	if args.move is True:
+		destination = configurator.get('thoth', 'output')
+		for line in filtered_dict:
+			moveFiles(destination, line, os.path.basename(line))
+	else:
+		logging.info("Not moving matches, per user configuration.")
+
+	
+	logging.info("Analysis and move completed!")
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description="Used to scan a given directory with a provided set of yara rules.")
@@ -144,6 +164,10 @@ if __name__ == '__main__':
 
 	parser.add_argument("-b", "--bro", action='store_true', default=False, required=False,
 		help="mandatory for parsing bro uids from a filename")
+
+	parser.add_argument("-m", "--move", action='store_true', default=False, required=False,
+		help="use this switch to tell the script to move matches to a directory specified in thoth.ini")
+
 	args = parser.parse_args()
 	main(args)
 
