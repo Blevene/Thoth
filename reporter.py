@@ -11,7 +11,7 @@ import argparse
 #Loggin Setup
 logging.basicConfig(level=logging.INFO,
     format='%(asctime)s %(message)s', 
-    filename='/var/log/Thoth.log')
+    filename='/home/blevene/Thoth.log')
 
 # Define all the crap in a config file
 configurator = SafeConfigParser()
@@ -50,6 +50,13 @@ def uid_extract(files):
         uids.append(uid)
     return uids
 
+# Filename extractor
+def file_name(files):
+    names = []
+    for line in files:
+        name = line.split("/")[-1]
+        names.append(name)
+    return names
  # Scanner module
 def scanner(toscan, rules):
     results = []
@@ -94,9 +101,13 @@ def main(args):
 	files = buildFilelist(pathtofiles)
 	#print files
 
-	#extract the bro session id from file name
-	uids = uid_extract(files)
-
+	#extract the bro session id from file name 
+	#if -b or --bro is specified
+	if args.bro is True:
+		uids = uid_extract(files)
+	else:
+		uids = file_name(files)
+	
 	#hash all the files
 	hashes = md5sum(files)
 
@@ -126,11 +137,13 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Used to scan a given directory with a provided set of yara rules.")
 
 	parser.add_argument("--rules", action='store', default=None, required=False,
-		help="specify a rules file other than the default, ye_trojans")
+		help="specify a rules file other than the default, supplied in thoth.ini")
 
 	parser.add_argument("--input", action='store', default=None, required=False,
 		help="specify a folder or file to be scanned")
 
+	parser.add_argument("-b", "--bro", action='store_true', default=False, required=False,
+		help="mandatory for parsing bro uids from a filename")
 	args = parser.parse_args()
 	main(args)
 
