@@ -138,7 +138,15 @@ def main(args):
 		output[line] = json.dumps(data)
 	#filter the "null" matches
 	filtered_dict = {k:v for (k,v) in output.iteritems() if not "null" in v}
-	print filtered_dict
+	
+	#If a outfile was specified, write the results to that location
+	#otherwise print to stdout
+	if args.outfile is not None:
+		with open(args.outfile, 'w') as outfile:
+			json.dump(filtered_dict, outfile)
+	else:
+		print json.dumps(filtered_dict)
+		#[debug]print filtered_dict
 
 	#move the files to a specified location
 	#specify the location in thoth.ini, example /tmp/
@@ -168,7 +176,8 @@ if __name__ == '__main__':
 	parser.add_argument("-m", "--move", action='store_true', default=False, required=False,
 		help="use this switch to tell the script to move matches to a directory specified in thoth.ini")
 
+	parser.add_argument("-o", "--outfile", action='store', default=None, required=False,
+		help="specify an outfile to be written")
 	args = parser.parse_args()
 	main(args)
-
 
